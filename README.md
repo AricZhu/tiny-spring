@@ -13,3 +13,16 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 * BeanFactory：使用 HashMap 来管理 BeanDefinition
 
 ![容器](./document/img/img01.png)
+
+### 完善 Bean 容器的设计
+上面完成了一个基本的 Bean 容器，现在我们需要运用设计模式来完善 Bean 容器，使其具有单例模式的能力，职责分离，便于后期的管理：
+
+整体的设计如下：
+
+![容器](./document/img/img02.png)
+
+容器中的各个类关系如下：
+
+![继承关系](./document/img/img03.png)
+
+
