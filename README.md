@@ -33,3 +33,11 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 * DefaultListableBeanFactory 类则是最终的一个 BeanFactory 实现类，用于实际使用
 
 最终通过上述的这种接口、抽象类的方式，使各个类各司其职，职责分离，方便后续的代码维护
+
+### 对象实例化
+上面只做了简单的空参情况的对象实例化，现在需要考虑有参数的对象实例化。有两种方式的有参对象实例化：
+
+1. 通过 JDK 方式，也就是 Java 自带的方式进行对象实例化（反射）
+2. 通过 Cglib
+
+![对象实例化](./document/img/image04.png)
