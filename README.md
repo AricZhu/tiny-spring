@@ -25,4 +25,11 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![继承关系](./document/img/img03.png)
 
+* 首先改造了 BeanDefinitioin，原先存放的是已经实例化后的对象，现在改为 Class 类，这样就不要用户手动实例化对象，而是把对象的创建权交给容器
+* 通过 SingletonBeanRegistry 接口和 DefaultSingletonBeanRegistry 实现类，我们实现了单例模式的能力
+* 通过 BeanFactory 和 BeanDefinitionRegistry 这两个接口，规定了 Bean 的获取和注册的方式
+* 通过 AbstractBeanFactory 抽象类确定了获取 Bean 的实现逻辑
+* AbstractAutowireCapableBeanFactory 抽象类实现了 Bean 的获取功能
+* DefaultListableBeanFactory 类则是最终的一个 BeanFactory 实现类，用于实际使用
 
+最终通过上述的这种接口、抽象类的方式，使各个类各司其职，职责分离，方便后续的代码维护
