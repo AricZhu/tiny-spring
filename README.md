@@ -38,6 +38,6 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 上面只做了简单的空参情况的对象实例化，现在需要考虑有参数的对象实例化。有两种方式的有参对象实例化：
 
 1. 通过 JDK 方式，也就是 Java 自带的方式进行对象实例化（反射）
-2. 通过 Cglib
+2. 通过 Cglib: Cglib 的方式是通过创建一个目标对象的子对象来实现的
 
 ![对象实例化](./document/img/image04.png)
