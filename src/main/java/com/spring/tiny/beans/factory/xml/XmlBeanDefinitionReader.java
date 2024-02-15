@@ -49,18 +49,24 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
         loadBeanDefinitions(resource);
     }
 
-    public void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException {
+    @Override
+    public void loadBeanDefinitions(String... locations) throws BeansException {
+        for (String location : locations) {
+            loadBeanDefinitions(location);
+        }
+    }
+
+    protected void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException {
         Document doc = XmlUtil.readXML(inputStream);
         Element root = doc.getDocumentElement();
         NodeList childNodes = root.getChildNodes();
 
         for (int i = 0; i < childNodes.getLength(); i++) {
-            if (!(childNodes.item(i) instanceof Element)) {
-                continue;
-            }
-            if (!"bean".equals(childNodes.item(i).getNodeName())) {
-                continue;
-            }
+            // 判断元素
+            if (!(childNodes.item(i) instanceof Element)) continue;
+            // 判断对象
+            if (!"bean".equals(childNodes.item(i).getNodeName())) continue;
+
             // 解析标签
             Element bean = (Element) childNodes.item(i);
             String id = bean.getAttribute("id");

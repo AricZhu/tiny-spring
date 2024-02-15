@@ -68,3 +68,18 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 具体的类关系如下：
 
 ![资源类关系](./document/img/img08.png)
+
+## 实现上下文和扩展机制
+在上面的实现中，我们暴露了 BeanFactory 和 BeanDefinitionReader 来实现 Bean 的创建和注册。这种方式使用起来比较繁琐，同时我们后面还需要增加 Bean 创建前后的钩子处理函数，因此我们提供一个封装了注册、创建、钩子函数等所有功能的统一的类：上下文类。
+
+通过下面两个接口实现了对象创建过程中的钩子函数：
+* BeanFactoryPostProcess: 是由 Spring 框架组建提供的容器扩展机制，允许在 Bean 对象注册后但未实例化之前，对 Bean 的定义信息 BeanDefinition 执行修改操作。
+* BeanPostProcessor: 也是 Spring 提供的扩展机制，不过 BeanPostProcessor 是在 Bean 对象实例化之后修改 Bean 对象，也可以替换 Bean 对象。这部分与后面要实现的 AOP 有着密切的关系。
+
+![上下文对象](./document/img/img09.png)
+
+* 以继承了 ListableBeanFactory 接口的 ApplicationContext 接口开始，扩展出一系列应用上下文的抽象实现类，并最终完成 ClassPathXmlApplicationContext 类的实现。而这个类就是最后交给用户使用的类。
+* 同时在实现应用上下文的过程中，通过定义接口：BeanFactoryPostProcessor、BeanPostProcessor 两个接口，把关于对 Bean 的扩展机制串联进去了。
+* 在上下文类中，会先找到所有实现了 BeanFactoryPostProcessor、BeanPostProcessor 的类，并在对应的生命周期中调用。
+
+![类关系](./document/img/img10.png)
