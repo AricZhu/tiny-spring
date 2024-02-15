@@ -41,3 +41,16 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 2. 通过 Cglib: Cglib 的方式是通过创建一个目标对象的子对象来实现的
 
 ![对象实例化](./document/img/image04.png)
+
+### 对象属性填充
+在上述创建完对象后，接下来就需要去填充对象中的属性了，对象中的属性有基本类型，也有依赖于其他的 Bean 对象，所以这里也会存在循环依赖的问题。不过关于循环依赖，这里先不展开。
+
+![属性填充](./document/img/img05.png)
+
+* 这里我们使用 PropertyValue 和 PropertyValue 这两个类来管理对象的属性。
+* 在 createBean 中创建完 Bean 对象后，再调用 applyPropertyValues 来填充 Bean 的属性。
+* 我们通过 BeanReference 来表示 Bean 类型的属性。如果待创建的 Bean 中包含其他 Bean 对象，则会先递归创建其他 Bean 对象。
+
+类关系图如下：
+
+![属性类关系](./document/img/img06.png)

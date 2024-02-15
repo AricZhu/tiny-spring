@@ -1,20 +1,17 @@
 package com.spring.tiny.test.bean;
 
 public class UserService {
-    private String name;
+    private UserDao userDao;
 
-    public UserService(String name) {
-        this.name = name;
+    public void queryUserInfo(String userId) {
+        System.out.println("查询用户信息：" + userDao.queryUserName(userId));
     }
 
-    public void queryUserInfo() {
-        System.out.println("查询用户信息: " + this.name);
+    public UserDao getUserDao() {
+        return userDao;
     }
 
-    @Override
-    public String toString() {
-        return "UserService{" +
-                "name='" + name + '\'' +
-                '}';
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
     }
 }
