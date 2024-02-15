@@ -54,3 +54,17 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 类关系图如下：
 
 ![属性类关系](./document/img/img06.png)
+
+### 实现从 XML 加载 Bean 对象
+之前都是从测试类中手动进行 Bean 对象的注册和定义，现在我们需要实现从配置文件中自动注册加载 Bean 对象。加载过程如下：
+
+![资源注册](./document/img/img07.png)
+
+为了实现资源加载功能，这里定义两种类：资源类，Bean 加载类。
+
+* 资源类：用来表示不同的资源方式，目前有 Class 类方式、File 文件方式还有 Http 方式这三种，因此需要一个类来定义资源的标准。
+* Bean 加载类：实现从资源中加载 Bean 的功能
+
+具体的类关系如下：
+
+![资源类关系](./document/img/img08.png)
