@@ -33,14 +33,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         // 5. BeanPostProcessor 需要提前于其他 Bean 对象实例化之前执行注册操作
         registerBeanPostProcessors(beanFactory);
 
-        // 6. 提前实例化单例Bean对象
-        beanFactory.preInstantiateSingletons();
-
         // 7. 初始化事件发布者
         initApplicationEventMulticaster();
 
         // 8. 注册事件监听器
         registerListeners();
+
+        // 6. 提前实例化单例Bean对象
+        beanFactory.preInstantiateSingletons();
 
         // 9. 发布容器刷新完成事件
         finishRefresh();
