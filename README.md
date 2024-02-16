@@ -138,3 +138,19 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 类关系如下：
 
 ![事件类](./document/img/img18.png)
+
+## 12. 基于 JDK 和 Cglib 的动态代理实现 AOP
+代理的实现有两个关键点：
+1. 如何对指定的方法进行代理，之前我们都是直接代理的整个类，而不是某些方法
+2. 如何把类的职责拆分出来
+
+![代理](./document/img/img19.png)
+
+类关系图：
+
+![类关系](./document/img/img20.png)
+
+* 整个类关系图就是 AOP 实现核心逻辑的地方，上面部分是关于方法的匹配实现，下面从 AopProxy 开始是关于方法的代理操作。
+* AspectJExpressionPointcut 的核心功能主要依赖于 aspectj 组件并处理 Pointcut、ClassFilter,、MethodMatcher 接口实现，专门用于处理类和方法的匹配过滤操作。
+* AopProxy 是代理的抽象对象，它的实现主要是基于 JDK 的代理和 Cglib 代理。在前面章节关于对象的实例化 CglibSubclassingInstantiationStrategy，我们也使用过 Cglib 提供的功能。
+
