@@ -95,3 +95,19 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 类关系图如下：
 
 ![类关系](./document/img/img12.png)
+
+## 定义标记类对象，实现容器感知
+我们不仅可以通过创建、销毁等钩子函数来感知容器，还可以通过标记类的方式来感知容器，具体实现也比较简单，通过定义一个标记接口 Aware，然后在 Bean 对象创建的过程中通过 instanceof 来判断当前的 Bean 对象是否实现了 Aware 接口，再调用相关的代码。
+
+我们定义如下 4 个 Aware 接口来感知容器中不同的对象：
+* BeanFactoryAware：感知所属的 BeanFactory 
+* BeanClassLoaderAware：感知所属的 ClassLoader
+* BeanNameAware：感知所属的 BeanName
+* ApplicationContextAware：感知所属的 ApplicationContext
+
+**注意**：由于 ApplicationContext 的获取并不能直接在创建 Bean 时候就可以拿到，所以需要在 refresh 操作时，把 ApplicationContext 写入到一个包装的 BeanPostProcessor 中去，再由 AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization 方法调用。
+
+![容器感知](./document/img/img13.png)
+
+类关系如下：
+![感知接口的类关系](./document/img/img14.png)
