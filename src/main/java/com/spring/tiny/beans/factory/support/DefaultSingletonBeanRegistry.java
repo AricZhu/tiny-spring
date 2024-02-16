@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
+    protected static final Object NULL_OBJECT = new Object();
     private Map<String, Object> singletonMap = new HashMap<String, Object>();
 
     private final Map<String, DisposableBean> disposableBeans = new HashMap<>();

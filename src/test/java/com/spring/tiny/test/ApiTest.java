@@ -72,11 +72,14 @@ public class ApiTest {
         applicationContext.registerShutdownHook();
 
         // 2. 获取Bean对象调用方法
-        UserService userService = applicationContext.getBean("userService", UserService.class);
-        String result = userService.queryUserInfo("1001");
+        UserService userService01 = applicationContext.getBean("userService", UserService.class);
+        UserService userService02 = applicationContext.getBean("userService", UserService.class);
+        System.out.println("scope 测试");
+        System.out.println(userService01);
+        System.out.println(userService02);
+
+        String result = userService01.queryUserInfo("1001");
         System.out.println(result);
 
-        System.out.println("ApplicationContext: " + userService.getApplicationContext());
-        System.out.println("BeanFactory: " + userService.getBeanFactory());
     }
 }
