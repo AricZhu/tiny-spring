@@ -83,3 +83,15 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 * 在上下文类中，会先找到所有实现了 BeanFactoryPostProcessor、BeanPostProcessor 的类，并在对应的生命周期中调用。
 
 ![类关系](./document/img/img10.png)
+
+### Bean 对象创建和销毁的钩子
+这里我们使用两种方式来实现对象创建和销毁的钩子：
+1. 通过接口定义的方式来实现：提供了 InitializingBean 和 DisposableBean 这两个接口来定义对象的创建和销毁的钩子函数，在对应的生命周期中，通过判断当前 bean 对象是否实现了这两个接口来实现调用（直接使用 instanceof 来进行判断, 并强制转换后直接调用）
+2. 通过 xml 中配置来实现：在 BeanDefinition 中增加 init-method 和 destroy-method 属性来定义对象的创建和销毁的钩子函数，并通过反射的方式进行调用
+3. 添加了 DisposableBeanAdapter 类来统一两种形式的销毁钩子
+
+![创建和销毁钩子](./document/img/img11.png)
+
+类关系图如下：
+
+![类关系](./document/img/img12.png)
