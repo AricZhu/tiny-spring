@@ -7,6 +7,7 @@ import com.spring.tiny.beans.factory.factory.SingletonBeanRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     protected static final Object NULL_OBJECT = new Object();
@@ -20,6 +21,11 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     public void addSingleton(String beanName, Object singletonObj) {
         singletonMap.put(beanName, singletonObj);
+    }
+
+    @Override
+    public void registerSingleton(String beanName, Object singletonObject) {
+        singletonMap.put(beanName, singletonObject);
     }
 
     public void registerDisposableBean(String beanName, DisposableBean bean) {

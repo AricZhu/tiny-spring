@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
-    <bean id="userService" class="com.spring.tiny.test.bean.UserService" scope="prototype">
-        <property name="company" value="腾讯"/>
-        <property name="location" value="深圳"/>
-        <property name="userDao" ref="proxyUserDao"/>
-    </bean>
+    <bean class="com.spring.tiny.test.event.ContextRefreshedEventListener"/>
 
-    <bean id="proxyUserDao" class="com.spring.tiny.test.bean.ProxyBeanFactory"/>
+    <bean class="com.spring.tiny.test.event.CustomEventListener"/>
 
-    <bean class="com.spring.tiny.test.common.MyBeanPostProcessor"/>
-    <bean class="com.spring.tiny.test.common.MyBeanFactoryPostProcessor"/>
+    <bean class="com.spring.tiny.test.event.ContextClosedEventListener"/>
 </beans>

@@ -124,5 +124,17 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![类关系图](./document/img/img16.png)
 
+## 11. 实现事件发布订阅机制
+事件的发布订阅通常用来在一对多的场景下进行消息的通信，可以更好的解耦。事件机制主要有以下 3 个接口完成：
+* 事件定义: ApplicationEvent
+* 事件监听: ApplicationEventMulticaster，定义了提供添加、删除、广播事件的功能
+* 事件发布: ApplicationEventPublisher，定了事件发布标准
+* 事件监听函数: ApplicationListener。对当前事件是否感兴趣的分析是通过 isAssignableFrom 来进行判断的。isAssignableFrom 和 instanceof 相似，不过 isAssignableFrom 是用来判断子类和父类的关系的，或者接口的实现类和接口的关系的，默认所有的类的终极父类都是Object。如果 A.isAssignableFrom(B) 结果是 true，证明 B 可以转换成为 A,也就是 A 可以由 B 转换而来。
 
+事件监听函数的添加是在 refresh 函数中实现
 
+![事件机制](./document/img/img17.png)
+
+类关系如下：
+
+![事件类](./document/img/img18.png)

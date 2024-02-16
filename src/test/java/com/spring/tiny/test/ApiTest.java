@@ -12,6 +12,7 @@ import com.spring.tiny.core.io.DefaultResourceLoader;
 import com.spring.tiny.core.io.Resource;
 import com.spring.tiny.test.bean.UserDao;
 import com.spring.tiny.test.bean.UserService;
+import com.spring.tiny.test.event.CustomEvent;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,5 +82,13 @@ public class ApiTest {
         String result = userService01.queryUserInfo("1001");
         System.out.println(result);
 
+    }
+
+    @Test
+    public void test_event() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        applicationContext.publishEvent(new CustomEvent(applicationContext, 1019129009086763L, "成功了！"));
+
+        applicationContext.registerShutdownHook();
     }
 }
