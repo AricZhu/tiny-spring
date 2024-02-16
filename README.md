@@ -4,7 +4,7 @@
 
 [《Spring 手撸专栏》](https://mp.weixin.qq.com/s?__biz=MzIxMDAwMDAxMw==&mid=2650730541&idx=1&sn=9fcd5baf6ec3e880786c4a0384166bdd&chksm=8f6111cfb81698d9bb5a4c61075d87658f7296bdb42ea72dd1b7d4312f3b75f719399ed2223c&cur_album_id=1871634116341743621&scene=189#wechat_redirect)
 
-## Bean 容器
+## 2. Bean 容器
 Bean 容器就是 Spring 框架中管理所有对象的容器，因为在 Spring 框架中使用 IOC（控制反转）技术来创建和管理所有的对象，所以需要一个容器来管理这些对象。
 
 Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
@@ -14,7 +14,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![容器](./document/img/img01.png)
 
-### 完善 Bean 容器的设计
+## 3. 完善 Bean 容器的设计
 上面完成了一个基本的 Bean 容器，现在我们需要运用设计模式来完善 Bean 容器，使其具有单例模式的能力，职责分离，便于后期的管理：
 
 整体的设计如下：
@@ -34,7 +34,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 最终通过上述的这种接口、抽象类的方式，使各个类各司其职，职责分离，方便后续的代码维护
 
-### 对象实例化
+## 4. 对象实例化
 上面只做了简单的空参情况的对象实例化，现在需要考虑有参数的对象实例化。有两种方式的有参对象实例化：
 
 1. 通过 JDK 方式，也就是 Java 自带的方式进行对象实例化（反射）
@@ -42,7 +42,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![对象实例化](./document/img/image04.png)
 
-### 对象属性填充
+## 5. 对象属性填充
 在上述创建完对象后，接下来就需要去填充对象中的属性了，对象中的属性有基本类型，也有依赖于其他的 Bean 对象，所以这里也会存在循环依赖的问题。不过关于循环依赖，这里先不展开。
 
 ![属性填充](./document/img/img05.png)
@@ -55,7 +55,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![属性类关系](./document/img/img06.png)
 
-### 实现从 XML 加载 Bean 对象
+## 6. 实现从 XML 加载 Bean 对象
 之前都是从测试类中手动进行 Bean 对象的注册和定义，现在我们需要实现从配置文件中自动注册加载 Bean 对象。加载过程如下：
 
 ![资源注册](./document/img/img07.png)
@@ -69,7 +69,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![资源类关系](./document/img/img08.png)
 
-## 实现上下文和扩展机制
+## 7. 实现上下文和扩展机制
 在上面的实现中，我们暴露了 BeanFactory 和 BeanDefinitionReader 来实现 Bean 的创建和注册。这种方式使用起来比较繁琐，同时我们后面还需要增加 Bean 创建前后的钩子处理函数，因此我们提供一个封装了注册、创建、钩子函数等所有功能的统一的类：上下文类。
 
 通过下面两个接口实现了对象创建过程中的钩子函数：
@@ -84,7 +84,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![类关系](./document/img/img10.png)
 
-### Bean 对象创建和销毁的钩子
+## 8. Bean 对象创建和销毁的钩子
 这里我们使用两种方式来实现对象创建和销毁的钩子：
 1. 通过接口定义的方式来实现：提供了 InitializingBean 和 DisposableBean 这两个接口来定义对象的创建和销毁的钩子函数，在对应的生命周期中，通过判断当前 bean 对象是否实现了这两个接口来实现调用（直接使用 instanceof 来进行判断, 并强制转换后直接调用）
 2. 通过 xml 中配置来实现：在 BeanDefinition 中增加 init-method 和 destroy-method 属性来定义对象的创建和销毁的钩子函数，并通过反射的方式进行调用
@@ -96,7 +96,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 
 ![类关系](./document/img/img12.png)
 
-## 定义标记类对象，实现容器感知
+## 9. 定义标记类对象，实现容器感知
 我们不仅可以通过创建、销毁等钩子函数来感知容器，还可以通过标记类的方式来感知容器，具体实现也比较简单，通过定义一个标记接口 Aware，然后在 Bean 对象创建的过程中通过 instanceof 来判断当前的 Bean 对象是否实现了 Aware 接口，再调用相关的代码。
 
 我们定义如下 4 个 Aware 接口来感知容器中不同的对象：
