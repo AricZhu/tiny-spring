@@ -1,7 +1,12 @@
 package com.spring.tiny.test.bean;
 
+import com.spring.tiny.context.annotation.Component;
+
 import java.util.Random;
+
+@Component("userService")
 public class UserService implements IUserService {
+    private String token;
 
     public String queryUserInfo() {
         try {
@@ -9,7 +14,7 @@ public class UserService implements IUserService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return "小傅哥，100001，深圳";
+        return "小傅哥，1001，深圳";
     }
 
     public String register(String userName) {
@@ -19,6 +24,19 @@ public class UserService implements IUserService {
             e.printStackTrace();
         }
         return "注册用户：" + userName + " success！";
+    }
+
+    @Override
+    public String toString() {
+        return "UserService#token = { " + token + " }";
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
 }

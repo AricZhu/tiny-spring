@@ -165,3 +165,16 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 * 整个类关系图中可以看到，在以 BeanPostProcessor 接口实现继承的 InstantiationAwareBeanPostProcessor 接口后，做了一个自动代理创建的类 DefaultAdvisorAutoProxyCreator，这个类的就是用于处理整个 AOP 代理融入到 Bean 生命周期中的核心类。
 * DefaultAdvisorAutoProxyCreator 会依赖于拦截器、代理工厂和Pointcut与Advisor的包装服务 AspectJExpressionPointcutAdvisor，由它提供切面、拦截方法和表达式。
 * Spring 的 AOP 把 Advice 细化了 BeforeAdvice、AfterAdvice、AfterReturningAdvice、ThrowsAdvice，目前我们做的测试案例中只用到了 BeforeAdvice，这部分可以对照 Spring 的源码进行补充测试。
+
+## 14. 使用注解和包扫描实现 Bean 注册
+为了实现自动扫描注册，我们需要完成两件事：
+1. 提供需要扫描的基本包的路径
+2. 对需要自动注册的 Bean 对象添加注解来进行标记
+
+同时通过 BeanFactoryPostProcessor 接口来实现对生成后的 Bean 对象进行属性占位符的替换。
+
+![scan](./document/img/img23.png)
+
+类关系如下：
+
+![类关系](./document/img/img24.png)
