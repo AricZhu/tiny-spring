@@ -40,7 +40,7 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 1. 通过 JDK 方式，也就是 Java 自带的方式进行对象实例化（反射）
 2. 通过 Cglib: Cglib 的方式是通过创建一个目标对象的子对象来实现的
 
-![对象实例化](./document/img/image04.png)
+![对象实例化](./document/img/img04.png)
 
 ## 5. 对象属性填充
 在上述创建完对象后，接下来就需要去填充对象中的属性了，对象中的属性有基本类型，也有依赖于其他的 Bean 对象，所以这里也会存在循环依赖的问题。不过关于循环依赖，这里先不展开。
@@ -178,3 +178,15 @@ Bean 容器主要有两个类实现：BeanDefinition 和 BeanFactory。
 类关系如下：
 
 ![类关系](./document/img/img24.png)
+
+## 15. 实现属性的注入
+在上一节我们通过 Component 注解实现了对象的自动注册，现在我们实现对象属性的自动注入，就像 @Autowired 和 @Value 注解那样，完成对象属性的自动注册。
+
+完成属性的自动注入需要以下两件事情：
+1. 将属性信息添加到 PropertyValues 的集合中
+2. 创建对象后，将属性填充进去
+
+![属性注入](./document/img/img25.png)
+
+类关系如下：
+![类关系](./document/img/img26.png)

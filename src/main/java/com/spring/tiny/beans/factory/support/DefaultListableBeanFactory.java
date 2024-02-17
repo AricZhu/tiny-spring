@@ -5,9 +5,7 @@ import com.spring.tiny.beans.factory.ConfigurableListableBeanFactory;
 import com.spring.tiny.beans.factory.factory.BeanDefinition;
 import com.spring.tiny.beans.factory.factory.BeanPostProcessor;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory implements BeanDefinitionRegistry, ConfigurableListableBeanFactory {
     private Map<String, BeanDefinition> beanDefinitionsMap = new HashMap<String, BeanDefinition>();
@@ -20,6 +18,21 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         }
 
         return beanDefinition;
+    }
+
+    public <T> T getBean(Class<T> requiredType) throws BeansException {
+        List<String> beanNames = new ArrayList<>();
+        for (Map.Entry<String, BeanDefinition> entry : beanDefinitionsMap.entrySet()) {
+            Class beanClass = entry.getValue().getBeanClass();
+            if (requiredType.isAssignableFrom(beanClass)) {
+                beanNames.add(entry.getKey());
+            }
+        }
+        if (1 == beanNames.size()) {
+            return getBean(beanNames.get(0), requiredType);
+        }
+
+        throw new BeansException(requiredType + "expected single bean but found " + beanNames.size() + ": " + beanNames);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.spring.tiny.beans.factory.factory;
 
 import com.spring.tiny.beans.BeansException;
+import com.spring.tiny.beans.factory.PropertyValues;
 
 /**
  * Subinterface of {@link BeanPostProcessor} that adds a before-instantiation callback,
@@ -29,5 +30,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
      * @throws BeansException
      */
     Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException;
+
+    PropertyValues postProcessPropertyValues(PropertyValues pvs, Object bean, String beanName) throws BeansException;
 
 }

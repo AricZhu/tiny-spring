@@ -6,6 +6,7 @@ import com.spring.tiny.aop.framework.ProxyFactory;
 import com.spring.tiny.beans.BeansException;
 import com.spring.tiny.beans.factory.BeanFactory;
 import com.spring.tiny.beans.factory.BeanFactoryAware;
+import com.spring.tiny.beans.factory.PropertyValues;
 import com.spring.tiny.beans.factory.factory.InstantiationAwareBeanPostProcessor;
 import com.spring.tiny.beans.factory.support.DefaultListableBeanFactory;
 import org.aopalliance.aop.Advice;
@@ -77,6 +78,11 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         return bean;
+    }
+
+    @Override
+    public PropertyValues postProcessPropertyValues(PropertyValues pvs, Object bean, String beanName) throws BeansException {
+        return pvs;
     }
     
 }
