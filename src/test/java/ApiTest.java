@@ -1,20 +1,23 @@
-import com.tiny.spring.BeanDefinition;
-import com.tiny.spring.BeanFactory;
+import bean.UserService;
+import com.tiny.spring.factory.config.BeanDefinition;
+import com.tiny.spring.factory.support.DefaultListableBeanFactory;
 import org.junit.Test;
 
 public class ApiTest {
-
     @Test
-    public void testBeanFactory() {
-        BeanFactory beanFactory = new BeanFactory();
+    public void test_BeanFactory() {
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-        BeanDefinition beanDefinition = new BeanDefinition(new UserService());
+        BeanDefinition beanDefinition = new BeanDefinition(UserService.class);
 
-        // 注册一个 Bean 对象
         beanFactory.registerBeanDefinition("userService", beanDefinition);
 
-        // 获取 Bean 对象
         UserService userService = (UserService)beanFactory.getBean("userService");
         userService.queryUserInfo();
+
+        UserService userServiceSingleton = (UserService) beanFactory.getBean("userService");
+        userServiceSingleton.queryUserInfo();
+
+        System.out.println("singleton: " + String.valueOf(userService == userServiceSingleton));
     }
 }

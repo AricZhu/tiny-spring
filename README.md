@@ -13,8 +13,17 @@
 
 ![容器](./document/img/img01.png)
 
-## 3. 完善 Bean 容器的设计
-上面完成了一个基本的 Bean 容器，现在我们需要运用设计模式来完善 Bean 容器，使其具有单例模式的能力，职责分离，便于后期的管理：
+## 2. 完善 Bean 容器
+在上一章我们完成了一个基本的 Bean 管理容器，现在我们需要进一步优化
+
+* 首先就是对象的实例化操作应该由容器来实现，而不是在注册的时候手动实例化对象。所以需要改造 *BeanDefinition*，用来存储 Class，而不是实例化的对象
+* 其次，我们需要扩展容器的能力，比如添加单例能力，这样在多次获取对象的时候，不至于重复创建对象，浪费性能。为了实现单例能力，我们定义了标准接口 *SingletonBeanRegistry*，以及它的实现类 *DefaultSingletonBeanRegistry*
+* 然后我们定义了一个标准的接口 *BeanFactory* 用来定义 Bean 操作的核心标准
+* 再然后我们添加一个抽象类 *AbstractBeanFactory* 实现了这个标准接口 *BeanFactory*，同时该类继承了上述的单例实现类 *DefaultSingletonBeanRegistry*，并最终用单例的方式实现了 getBean 方法。同时 getBean 方法的实现又依赖于 getBeanDefinition 和 createBean 这两个方法，等待后续子类继承实现
+* 接着我们再定义 *AbstractAutowireCapableBeanFactory* 类并继承自上述的 *AbstractBeanFactory*，该类专门实现 createBean 的方法，通过类的 newInstance 方式来创建实例对象。不过该方法存在一些问题，下面章节会重点优化 
+* 最后我们定义了最终的核心实现类 *DefaultListableBeanFactory*，它继承自上述的 *AbstractAutowireCapableBeanFactory* 类，同时为了管理 BeanDefinition，又实现了接口 *BeanDefinitionRegistry*，最终实现了 getBeanDefinition 方法
+
+我们通过上述的接口定义、类继承等方式，实现了单例能力，并且通过清晰的指责划分，将 bean 的获取、创建、注册等严格区分开，方便后续管理和扩展
 
 整体的设计如下：
 
@@ -23,15 +32,6 @@
 容器中的各个类关系如下：
 
 ![继承关系](./document/img/img03.png)
-
-* 首先改造了 BeanDefinitioin，原先存放的是已经实例化后的对象，现在改为 Class 类，这样就不要用户手动实例化对象，而是把对象的创建权交给容器
-* 通过 SingletonBeanRegistry 接口和 DefaultSingletonBeanRegistry 实现类，我们实现了单例模式的能力
-* 通过 BeanFactory 和 BeanDefinitionRegistry 这两个接口，规定了 Bean 的获取和注册的方式
-* 通过 AbstractBeanFactory 抽象类确定了获取 Bean 的实现逻辑
-* AbstractAutowireCapableBeanFactory 抽象类实现了 Bean 的新建逻辑
-* DefaultListableBeanFactory 类则是最终的一个 BeanFactory 实现类，用于实际使用
-
-最终通过上述的这种接口、抽象类的方式，使各个类各司其职，职责分离，方便后续的代码维护
 
 ## 4. 对象实例化
 上面只做了简单的空参情况的对象实例化，现在需要考虑有参数的对象实例化。有两种方式的有参对象实例化：
