@@ -12,7 +12,7 @@ public class ApiTest {
 
         beanFactory.registerBeanDefinition("userService", beanDefinition);
 
-        UserService userService = (UserService)beanFactory.getBean("userService");
+        UserService userService = (UserService)beanFactory.getBean("userService", "小明");
         userService.queryUserInfo();
 
         UserService userServiceSingleton = (UserService) beanFactory.getBean("userService");
