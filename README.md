@@ -51,20 +51,22 @@
 对象修改如下：
 ![对象实例化优化](./document/img/3-1.png)
 
-## 5. 对象属性填充
-在上述创建完对象后，接下来就需要去填充对象中的属性了，对象中的属性有基本类型，也有依赖于其他的 Bean 对象，所以这里也会存在循环依赖的问题。不过关于循环依赖，这里先不展开。
+## 4. 对象属性填充
+我们现在已经完成了对象实例化的创建，但一个对象内部还有很多的属性，因此这一章我们来实现对象属性的添加。
+
+* 首先对象属性的添加时机肯定是在对象创建完成后，所以我们在类 *AbstractAutowireCapableBeanFactory* 的 createBean 方法中，在实例化对象后，添加方法 applyPropertyValues 来给对象进步一添加属性
+* 其次就是属性的表达，我们这里定义类 *PropertyValue* 用来表示属性，它包含 name 和 value 这两个值
+* 一般对象都会有多个属性，所以我们又定义类 *PropertyValues*，用来管理属性，包含添加、获取属性列表、获取指定属性等方法，用来管理我们的属性
+* 同时，对象的属性不仅包含 int, boolean 等基础数据，也包含 Object，Bean 等其他对象，而为了表示其他 Bean 对象（对象 A 里面包含了对象 B），我们这里使用类 *BeanReference* 来表示其他对象属性
+* 然后我们修改 BeanDefinition，添加 propertyValues 属性来表示 Bean 中的所有属性
+* 最后在添加对象属性的时候，我们使用 hutool-all 工具中的 BeanUtil 来添加属性值。对于 BeanReference 类型的属性添加，我们需要先去获取 Bean，然后在添加，对于其他类型的属性，则可以直接添加
+* 对象之间的循环依赖问题这里暂不处理
 
 ![属性填充](./document/img/img05.png)
 
-* 这里我们使用 PropertyValue 和 PropertyValue 这两个类来管理对象的属性。
-* 在 createBean 中创建完 Bean 对象后，再调用 applyPropertyValues 来填充 Bean 的属性。
-* 我们通过 BeanReference 来表示 Bean 类型的属性。如果待创建的 Bean 中包含其他 Bean 对象，则会先递归创建其他 Bean 对象。
-
-类关系图如下：
-
 ![属性类关系](./document/img/img06.png)
 
-## 6. 实现从 XML 加载 Bean 对象
+## 5. 实现从 XML 加载 Bean 对象
 之前都是从测试类中手动进行 Bean 对象的注册和定义，现在我们需要实现从配置文件中自动注册加载 Bean 对象。加载过程如下：
 
 ![资源注册](./document/img/img07.png)
@@ -78,7 +80,7 @@
 
 ![资源类关系](./document/img/img08.png)
 
-## 7. 实现上下文和扩展机制
+## 6. 实现上下文和扩展机制
 在上面的实现中，我们暴露了 BeanFactory 和 BeanDefinitionReader 来实现 Bean 的创建和注册。这种方式使用起来比较繁琐，同时我们后面还需要增加 Bean 创建前后的钩子处理函数，因此我们提供一个封装了注册、创建、钩子函数等所有功能的统一的类：上下文类。
 
 通过下面两个接口实现了对象创建过程中的钩子函数：
@@ -93,7 +95,7 @@
 
 ![类关系](./document/img/img10.png)
 
-## 8. Bean 对象创建和销毁的钩子
+## 7. Bean 对象创建和销毁的钩子
 这里我们使用两种方式来实现对象创建和销毁的钩子：
 1. 通过接口定义的方式来实现：提供了 InitializingBean 和 DisposableBean 这两个接口来定义对象的创建和销毁的钩子函数，在对应的生命周期中，通过判断当前 bean 对象是否实现了这两个接口来实现调用（直接使用 instanceof 来进行判断, 并强制转换后直接调用）
 2. 通过 xml 中配置来实现：在 BeanDefinition 中增加 init-method 和 destroy-method 属性来定义对象的创建和销毁的钩子函数，并通过反射的方式进行调用
@@ -105,7 +107,7 @@
 
 ![类关系](./document/img/img12.png)
 
-## 9. 定义标记类对象，实现容器感知
+## 8. 定义标记类对象，实现容器感知
 我们不仅可以通过创建、销毁等钩子函数来感知容器，还可以通过标记类的方式来感知容器，具体实现也比较简单，通过定义一个标记接口 Aware，然后在 Bean 对象创建的过程中通过 instanceof 来判断当前的 Bean 对象是否实现了 Aware 接口，再调用相关的代码。
 
 我们定义如下 4 个 Aware 接口来感知容器中不同的对象：
@@ -121,7 +123,7 @@
 类关系如下：
 ![感知接口的类关系](./document/img/img14.png)
 
-## 10. Bean 对象作用域的实现已经动态代理对象的注册
+## 9. Bean 对象作用域的实现已经动态代理对象的注册
 之前创建的 Bean 对象默认都是单例的，即只会创建一次，后续直接从缓存中获取，本节中我们添加原型作用域，在每次使用的时候都会重新创建对象。 同时还增加了代理对象注册到容器中的能力。
 
 我们在使用 Spring、MyBatis 框架的时候都可以知道，并没有手动的去创建任何操作数据库的 Bean 对象，有的仅仅是一个接口定义，而这个接口定义竟然可以被注入到其他需要使用 Dao 的属性中去了，那么这一过程最核心待解决的问题，就是需要完成把复杂且以代理方式动态变化的对象，注册到 Spring 容器中。
@@ -133,7 +135,7 @@
 
 ![类关系图](./document/img/img16.png)
 
-## 11. 实现事件发布订阅机制
+## 10. 实现事件发布订阅机制
 事件的发布订阅通常用来在一对多的场景下进行消息的通信，可以更好的解耦。事件机制主要有以下 3 个接口完成：
 * 事件定义: ApplicationEvent
 * 事件监听: ApplicationEventMulticaster，定义了提供添加、删除、广播事件的功能
@@ -148,7 +150,7 @@
 
 ![事件类](./document/img/img18.png)
 
-## 12. 基于 JDK 和 Cglib 的动态代理实现 AOP
+## 11. 基于 JDK 和 Cglib 的动态代理实现 AOP
 代理的实现有两个关键点：
 1. 如何对指定的方法进行代理，之前我们都是直接代理的整个类，而不是某些方法
 2. 如何把类的职责拆分出来
@@ -163,7 +165,7 @@
 * AspectJExpressionPointcut 的核心功能主要依赖于 aspectj 组件并处理 Pointcut、ClassFilter,、MethodMatcher 接口实现，专门用于处理类和方法的匹配过滤操作。
 * AopProxy 是代理的抽象对象，它的实现主要是基于 JDK 的代理和 Cglib 代理。在前面章节关于对象的实例化 CglibSubclassingInstantiationStrategy，我们也使用过 Cglib 提供的功能。
 
-## 13. 添加 AOP 动态代理到 Bean 生命周期
+## 12. 添加 AOP 动态代理到 Bean 生命周期
 其实在有了AOP的核心功能实现后，把这部分功能服务融入到 Spring 其实也不难，只不过要解决几个问题，包括：怎么借着 BeanPostProcessor 把动态代理融入到 Bean 的生命周期中，以及如何组装各项切点、拦截、前置的功能和适配对应的代理器。整体设计结构如下图：
 
 ![AOP](./document/img/img21.png)
@@ -175,7 +177,7 @@
 * DefaultAdvisorAutoProxyCreator 会依赖于拦截器、代理工厂和Pointcut与Advisor的包装服务 AspectJExpressionPointcutAdvisor，由它提供切面、拦截方法和表达式。
 * Spring 的 AOP 把 Advice 细化了 BeforeAdvice、AfterAdvice、AfterReturningAdvice、ThrowsAdvice，目前我们做的测试案例中只用到了 BeforeAdvice，这部分可以对照 Spring 的源码进行补充测试。
 
-## 14. 使用注解和包扫描实现 Bean 注册
+## 13. 使用注解和包扫描实现 Bean 注册
 为了实现自动扫描注册，我们需要完成两件事：
 1. 提供需要扫描的基本包的路径
 2. 对需要自动注册的 Bean 对象添加注解来进行标记
@@ -188,7 +190,7 @@
 
 ![类关系](./document/img/img24.png)
 
-## 15. 实现属性的注入
+## 14. 实现属性的注入
 在上一节我们通过 Component 注解实现了对象的自动注册，现在我们实现对象属性的自动注入，就像 @Autowired 和 @Value 注解那样，完成对象属性的自动注册。
 
 完成属性的自动注入需要以下两件事情：
