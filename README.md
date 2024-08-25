@@ -67,16 +67,30 @@
 ![属性类关系](./document/img/img06.png)
 
 ## 5. 实现从 XML 加载 Bean 对象
-之前都是从测试类中手动进行 Bean 对象的注册和定义，现在我们需要实现从配置文件中自动注册加载 Bean 对象。加载过程如下：
+上一章我们已经实现了对象属性的添加，现在还有一个问题就是对象的注册，属性的添加等都是我们手动操作的，所以这章节我们实现从配置文件中自动注册加载 Bean 对象。加载过程如下：从不同类型的资源中解析并注册添加 Bean 对象到容器中
 
 ![资源注册](./document/img/img07.png)
 
-为了实现资源加载功能，这里定义两种类：资源类，Bean 加载类。
+为了实现上述的能力，我们需要实现下述内容：
 
-* 资源类：用来表示不同的资源方式，目前有 Class 类方式、File 文件方式还有 Http 方式这三种，因此需要一个类来定义资源的标准。
-* Bean 加载类：实现从资源中加载 Bean 的功能
+* 首先我们需要定义一个表示资源的接口 *Resource*，其中的 getInputStream 方法就是输出资源内容的接口
+* 接下来我们就可以基于这个标准接口定义三个类: *ClassPathResource*, *FileSystemResource*, *UrlResource* 分表表示类路径、文件和 url 这 3 种资源
+* 现在我们有了上述的用来表示资源的类以后，接下来我们需要实现一个资源加载的类，用来统一包装实现上述这 3 个不同资源的加载。为此我们定义标准接口 *ResourceLoader*，以及其实现类: *DefaultResourceLoader*，资源统一加载的实现逻辑如下：
+  * 先判断路径是否是 "classpath:" 前缀的，如果是，则直接返回 ClassPathResource 资源
+  * 如果不是"classpath:" 前缀，则尝试 URL 连接并返回 UrlResource 资源
+  * 如果上述步骤报错，则返回最后一种 FileSystemResource 资源
+* 在实现了上述的资源加载类以后，接下来就是资源的解析、Bean 对象注册添加的实现了。为此我们还是先定义标准接口 *BeanDefinitionReader*，其核心方法是 loadBeanDefinitions，但该方法的实现也同时依赖于另外两个非核心方法: getRegistry 和 getResourceLoader
+* 我们定义一个抽象类 *AbstractBeanDefinitionReader* 用来实现上述接口的非核心方法
+* 然后我们就可以定义核心实现类 *XmlBeanDefinitionReader*，实现其核心方法 loadBeanDefinitions，实现逻辑如下：
+  * 以 XML 的形式去解析资源，并循环遍历其中的节点
+  * 找出其中以 bean 为命名的节点，解析标签，获取各种属性后，生成 BeanDefinition 对象
+  * 继续遍历上述节点的子节点，找出其属性节点后进行属性的添加
+  * 最后完成 BeanDefinition 的注册，需要注意对重复注册的判断
+* 最后，我们需要将上述的 BeanDefinitionReader 和 BeanFactory 两者关联起来就可以了。这里我们是通过将 DefaultListableBeanFactory 作为 BeanDefinitionReader 的一个属性来进行关联  
+  
+在上述的资源解析实现过程中，我们先定义了标准接口，然后定义了一个抽象类用来实现标准接口中的非核心方法，最后再定义核心实现类用来实现核心逻辑，这种接口管定义，抽象类管其他实现，最终实现类管核心实现逻辑的设计方式是我们日常用到的，可以有效的避免无关方法污染最终实现类
 
-具体的类关系如下：
+以上这些接口、类的关系如下：
 
 ![资源类关系](./document/img/img08.png)
 
