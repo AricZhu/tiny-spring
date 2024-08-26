@@ -95,17 +95,46 @@
 ![资源类关系](./document/img/img08.png)
 
 ## 6. 实现上下文和扩展机制
-在上面的实现中，我们暴露了 BeanFactory 和 BeanDefinitionReader 来实现 Bean 的创建和注册。这种方式使用起来比较繁琐，同时我们后面还需要增加 Bean 创建前后的钩子处理函数，因此我们提供一个封装了注册、创建、钩子函数等所有功能的统一的类：上下文类。
+在上一章的实现中，我们通过 BeanFactory 和 BeanDefinitionReader 来实现 Bean 的创建和注册，但这种方式使用起来比较繁琐，不适合面向用户。因此在这章中我们通过实现一个上下文类来结合这两者，对外提供一个完整的服务
 
-通过下面两个接口实现了对象创建过程中的钩子函数：
-* BeanFactoryPostProcess: 是由 Spring 框架组建提供的容器扩展机制，允许在 Bean 对象注册后但未实例化之前，对 Bean 的定义信息 BeanDefinition 执行修改操作。
-* BeanPostProcessor: 也是 Spring 提供的扩展机制，不过 BeanPostProcessor 是在 Bean 对象实例化之后修改 Bean 对象，也可以替换 Bean 对象。这部分与后面要实现的 AOP 有着密切的关系。
+同时我们还提供了扩展机制，如下：
+* BeanFactoryPostProcessor：是由 Spring 框架组建提供的容器扩展机制，允许在 Bean 对象注册后但未实例化之前，对 Bean 的定义信息 BeanDefinition 执行修改操作。
+* BeanPostProcessor：也是 Spring 提供的扩展机制，不过 BeanPostProcessor 是在 Bean 对象实例化之后修改 Bean 对象，也可以替换 Bean 对象。这部分与后面要实现的 AOP 有着密切的关系。
+
+整体的结构设计如下：在应用上下文类中通过 refresh 方法自动实现 Bean 加载、注册和实例化；同时在 createBean 的前后提供钩子函数，方便修改 Bean 对象
 
 ![上下文对象](./document/img/img09.png)
 
-* 以继承了 ListableBeanFactory 接口的 ApplicationContext 接口开始，扩展出一系列应用上下文的抽象实现类，并最终完成 ClassPathXmlApplicationContext 类的实现。而这个类就是最后交给用户使用的类。
-* 同时在实现应用上下文的过程中，通过定义接口：BeanFactoryPostProcessor、BeanPostProcessor 两个接口，把关于对 Bean 的扩展机制串联进去了。
-* 在上下文类中，会先找到所有实现了 BeanFactoryPostProcessor、BeanPostProcessor 的类，并在对应的生命周期中调用。
+### BeanFactory 相关接口的改动
+在具体开始前，我们先对原先的一些接口做改动和扩充，具体如下：
+* BeanFactory: 已经存在的 Bean 工厂接口用于获取 Bean 对象，这次新增加了按照类型获取 Bean 的方法：<T> T getBean(String name, Class<T> requiredType)
+* ListableBeanFactory: 是一个扩展 Bean 工厂接口的接口，新增加了 getBeansOfType、getBeanDefinitionNames() 方法，在 Spring 源码中还有其他扩展方法
+* HierarchicalBeanFactory: 在 Spring 源码中它提供了可以获取父类 BeanFactory 方法，属于是一种扩展工厂的层次子接口
+* AutowireCapableBeanFactory: 是一个自动化处理 Bean 工厂配置的接口
+* ConfigurableBeanFactory: 可获取 BeanPostProcessor、BeanClassLoader等的一个配置化接口。
+* ConfigurableListableBeanFactory: 提供分析和修改Bean以及预先实例化的操作接口，不过目前只有一个 getBeanDefinition 方法。
+
+![BeanFactory改动](./document/img/beanFactory.png)
+
+### 应用上下文类的实现
+* 首先我们定义一个最基本的上下文类接口 *ApplicationContext*，它继承自 *ListableBeanFactory*，意味着这个上下文接口就有用了 BeanFactory 的能力
+* 然后我们在上面的 *ApplicationContext* 的基础上定义接口 *ConfigurableApplicationContext*，用来定义刷新容器方法 refresh
+* 接着我们定义抽象实现类 *AbstractApplicationContext*，它继承了 DefaultResourceLoader 类，拥有了资源加载能力，同时它还实现上述接口中的 refresh 方法，实现逻辑主要包含以下几步：
+  * 创建 BeanFactory，并加载 BeanDefinition
+  * 获取 BeanFactory
+  * 执行 BeanFactory 创建后的钩子函数 BeanFactoryPostProcessor
+  * 注册 Bean 对象实例化前后的钩子函数 BeanPostProcessor，方便后续 Bean 实例化时调用
+  * 提前实例化单例Bean对象
+* 接着我们定义抽象实现类 *AbstractRefreshableApplicationContext*，用来实现 BeanFactory 的创建和加载方法，这里主要是将抽象类 *DefaultListableBeanFactory* 作为内部属性来实现
+* 然后我们定义抽象实现类 *AbstractXmlApplicationContext*，用来实现 BeanDefinition 的加载
+* 最后我们定义最终的上下文实现类 *ClassPathXmlApplicationContext*
+
+### 扩展机制的实现
+* 我们定义接口 *BeanFactoryPostProcessor* 用来表示 BeanFactory 创建后的扩展，定义接口 *BeanPostProcessor* 来表示 Bean 实例化前后的钩子函数
+* BeanFactoryPostProcessor 钩子函数在上述 refresh 中就已经调用了，具体的调用方式很简单，就是直接获取该类型的对象，然后直接调用方法即可
+* BeanPostProcessor 在 refresh 函数中会先进行添加，添加的逻辑实现在 AbstractBeanFactory 类中，然后再后续 Bean 对象实例化时再进行调用
+* 因为钩子的调用是在 Bean 实例化前后，所以它的实现也放在了 *AbstractAutowireCapableBeanFactory* 抽象类中
+
 
 ![类关系](./document/img/img10.png)
 
