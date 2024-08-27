@@ -1,6 +1,10 @@
 package bean;
 
-public class UserService {
+import com.tiny.spring.BeanException;
+import com.tiny.spring.factory.DisposableBean;
+import com.tiny.spring.factory.InitializingBean;
+
+public class UserService implements InitializingBean, DisposableBean {
     private String uId;
     private String company;
     private String location;
@@ -40,5 +44,15 @@ public class UserService {
 
     public void setUserDao(UserDao userDao) {
         this.userDao = userDao;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        System.out.println("执行：UserService.destroy");
+    }
+
+    @Override
+    public void afterPropertiesSet() throws BeanException {
+        System.out.println("执行：UserService.afterPropertiesSet");
     }
 }

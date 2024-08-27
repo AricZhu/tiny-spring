@@ -147,16 +147,34 @@
 ![类关系](./document/img/img10.png)
 
 ## 7. Bean 对象创建和销毁的钩子
-这里我们使用两种方式来实现对象创建和销毁的钩子：
-1. 通过接口定义的方式来实现：提供了 InitializingBean 和 DisposableBean 这两个接口来定义对象的创建和销毁的钩子函数，在对应的生命周期中，通过判断当前 bean 对象是否实现了这两个接口来实现调用（直接使用 instanceof 来进行判断, 并强制转换后直接调用）
-2. 通过 xml 中配置来实现：在 BeanDefinition 中增加 init-method 和 destroy-method 属性来定义对象的创建和销毁的钩子函数，并通过反射的方式进行调用
-3. 添加了 DisposableBeanAdapter 类来统一两种形式的销毁钩子
+在上一章中我们实现了扩展机制，在 Bean 对象创建前后增加了钩子函数，这一章我们继续添加钩子函数，具体是对象初始化和销毁的钩子函数。这两个钩子函数的添加有两种方式：
+1. 通过属性的方式添加，具体就是在 BeanDefinition 中添加两个属性表示初始化和销毁的函数
+2. 通过标准接口的方式添加
+
+* 对于第一种方式的实现，我们需要在 BeanDefinition 中添加两个属性表示初始化和销毁的函数，然后在 xml 文件中配置这两个函数名称，最终通过反射的方式调用这两个方法
+* 对于第二种方式的实现比较简单，我们直接判断当前 Bean 是否是定义的标准接口，如果是则直接在 bean 上进行调用方法即可
+* 同时为了能更方便的执行销毁，我们再封装一个适配类 *DisposableBeanAdapter* 来统一实现这两种不同方式的销毁钩子
 
 ![创建和销毁钩子](./document/img/img11.png)
 
 类关系图如下：
 
 ![类关系](./document/img/img12.png)
+
+### 具体实现
+* 首先我们在 *BeanDefinition* 中添加两个属性，表示初始化和销毁，同时要在类 *XmlBeanDefinitionReader* 中解析 BeanDefinition 时添加这两个属性
+  * initMethodName
+  * destroyMethodName
+* 然后我们定义下面两个标准接口，用来表示第二种方式的钩子函数
+  * InitializingBean
+  * DisposableBean
+* 然后我们在抽象类 *AbstractAutowireCapableBeanFactory* 中进行初始化钩子函数的调用，因为该类是实现 Bean 实例化，所以我们在该类中实现初始函数的钩子调用，具体调用逻辑很简单：
+  * 当前的 Bean 是否实现了接口 *InitializingBean*，如果是则直接调用初始化方法
+  * 当前 BeanDefinition 中是否有初始化钩子方法属性，如果有则通过反射调用此方法
+* 调用完初始化钩子方法后，接下来我们注册添加销毁钩子，因为对象的销毁涉及到单例对象，所以我们把注册添加的实现我们放在单例类中 *DefaultSingletonBeanRegistry*，方法为 registerDisposableBean，同时在单例接口中添加了销毁方法的定义 destroySingletons，并由实现类实现
+* 为了统一销毁钩子的调用，我们这里添加统一包装类 *DisposableBeanAdapter*，具体的销毁逻辑和上述的初始化调用逻辑类似，不过有个额外的逻辑就是判断下通过属性的销毁函数和接口中的销毁函数是否一致，避免重复调用销毁函数
+* 销毁钩子的调用时机是在程序退出前，因为我们在 *ConfigurableApplicationContext* 中定义注册方法 registerShutdownHook，表示在程序退出前调用的钩子
+* 最后在抽象类 *AbstractApplicationContext* 中实现上述的注册方法，并在注册方法的实现中调用 destroySingletons 方法来完成对象销毁钩子
 
 ## 8. 定义标记类对象，实现容器感知
 我们不仅可以通过创建、销毁等钩子函数来感知容器，还可以通过标记类的方式来感知容器，具体实现也比较简单，通过定义一个标记接口 Aware，然后在 Bean 对象创建的过程中通过 instanceof 来判断当前的 Bean 对象是否实现了 Aware 接口，再调用相关的代码。
