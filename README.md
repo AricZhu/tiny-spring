@@ -133,7 +133,7 @@
 * 我们定义接口 *BeanFactoryPostProcessor* 用来表示 BeanFactory 创建后的扩展，定义接口 *BeanPostProcessor* 来表示 Bean 实例化前后的钩子函数
 * BeanFactoryPostProcessor 钩子函数在上述 refresh 中就已经调用了，具体的调用方式很简单，就是直接获取该类型的对象，然后直接调用方法即可
 * BeanPostProcessor 在 refresh 函数中会先进行添加，添加的逻辑实现在 AbstractBeanFactory 类中，然后再后续 Bean 对象实例化时再进行调用
-* 因为钩子的调用是在 Bean 实例化前后，所以它的实现也放在了 *AbstractAutowireCapableBeanFactory* 抽象类中
+* 因为钩子的调用是在 Bean 实例化前后，所以它的实现也放在了 *AbstractAutowireCapableBeanFactory* 抽象类中，具体的调用也很简单，就是直接循环调用在上一步 refresh 中注册那些钩子函数即可
 
 
 ![类关系](./document/img/img10.png)
