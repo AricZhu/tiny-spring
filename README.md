@@ -134,8 +134,15 @@
 * BeanFactoryPostProcessor 钩子函数在上述 refresh 中就已经调用了，具体的调用方式很简单，就是直接获取该类型的对象，然后直接调用方法即可
 * BeanPostProcessor 在 refresh 函数中会先进行添加，添加的逻辑实现在 AbstractBeanFactory 类中，然后再后续 Bean 对象实例化时再进行调用
 * 我们定义接口 *AutowireCapableBeanFactory*，用来定义 Bean 实例化前后的两个钩子方法
-* 因为钩子的调用是在 Bean 实例化前后，所以它的实现也放在了 *AbstractAutowireCapableBeanFactory* 抽象类中，该抽象类也同时实现上述的标准接口，并且接口的实现也很简单，就是直接循环调用在上一步 refresh 中注册那些钩子函数即可
+* 我们定义接口 *ConfigurableBeanFactory*，用来定义添加钩子函数的方法，并且在抽象类 *AbstractBeanFactory* 中实现添加钩子函数的方法
+* 最后我们定义抽象类 *AbstractAutowireCapableBeanFactory*，该抽象类继承 *AbstractBeanFactory*，所以拥有了钩子函数的添加能力，然后也实现了接口 *AutowireCapableBeanFactory*，实现了钩子函数的调用方法，该钩子函数的调用方法也很简单，就是就是直接循环调用注册那些钩子函数即可，而具体的钩子函数的注册在 refresh 中就已经完成
 
+至此我们就完成了扩展机制的实现，这里再简单总结一下:
+
+* 对于 BeanFactoryPostProcessor 钩子函数，我们直接在 refresh 中调用实现，对于 BeanPostProcessor 钩子函数，我们先在 refresh 中注册添加，然后在 *AbstractAutowireCapableBeanFactory* 抽象类中，在实例化 Bean 的时候进行调用
+* 同时为了设计实现，我们将钩子的注册添加通过接口 *ConfigurableBeanFactory* 来定义，并由抽象类 *AbstractBeanFactory* 实现
+* 钩子函数的调用实现通过接口 *AutowireCapableBeanFactory* 来定义
+* 最后抽象类 *AbstractAutowireCapableBeanFactory* 继承 *AbstractBeanFactory*，并且实现 *AutowireCapableBeanFactory* 接口，完成钩子的注册添加以及实现调用的完整流程
 
 ![类关系](./document/img/img10.png)
 
