@@ -4,11 +4,14 @@ import com.tiny.spring.BeanException;
 import com.tiny.spring.factory.config.BeanDefinition;
 import com.tiny.spring.factory.config.BeanPostProcessor;
 import com.tiny.spring.factory.config.ConfigurableBeanFactory;
+import com.tiny.spring.factory.utils.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
+    private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
+
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
 
     @Override
@@ -48,5 +51,9 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
 
     public List<BeanPostProcessor> getBeanPostProcessors() {
         return this.beanPostProcessors;
+    }
+
+    public ClassLoader getBeanClassLoader() {
+        return beanClassLoader;
     }
 }

@@ -177,17 +177,21 @@
 * 最后在抽象类 *AbstractApplicationContext* 中实现上述的注册方法，并在注册方法的实现中调用 destroySingletons 方法来完成对象销毁钩子
 
 ## 8. 定义标记类对象，实现容器感知
-我们不仅可以通过创建、销毁等钩子函数来感知容器，还可以通过标记类的方式来感知容器，具体实现也比较简单，通过定义一个标记接口 Aware，然后在 Bean 对象创建的过程中通过 instanceof 来判断当前的 Bean 对象是否实现了 Aware 接口，再调用相关的代码。
+目前为止我们已经有了一个功能很强大的框架了，有上下文，有钩子等能力，但如何将这些强大的内部能力对外开放呢，换句话说如果让外面的对象能感知到容器内部的能力呢，这就是本章节需要解决的问题
 
-我们定义如下 4 个 Aware 接口来感知容器中不同的对象：
-* BeanFactoryAware：感知所属的 BeanFactory 
-* BeanClassLoaderAware：感知所属的 ClassLoader
-* BeanNameAware：感知所属的 BeanName
-* ApplicationContextAware：感知所属的 ApplicationContext
-
-**注意**：由于 ApplicationContext 的获取并不能直接在创建 Bean 时候就可以拿到，所以需要在 refresh 操作时，把 ApplicationContext 写入到一个包装的 BeanPostProcessor 中去，再由 AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization 方法调用。
+解决的思路其实很简单，就是我们定义标准的感知接口，然后由外部对象实现该感知接口，然后在容器创建 Bean 对象时，判断是否实现了感知接口，如果实现则直接调用接口方法将容器内的 BeanFactory 等开放给外部用户即可。而判断的方法也很简单，就是像之前那样，通过 instanceof 方式来判断即可
 
 ![容器感知](./document/img/img13.png)
+
+### 具体实现
+* 首先我们定义标准的感知接口 *Aware*，然后基于该接口我们扩展下面 4 个具体的感觉接口。需要注意的是前 3 个感知接口都和 Bean 相关，所以直接在 createBean 方法中处理即可，而第 4 个是上下文相关，在 createBean 中获取不到，因此需要借助 BeanPostProcessor 扩展来实现
+  * BeanFactoryAware：感知所属的 BeanFactory
+  * BeanClassLoaderAware：感知所属的 ClassLoader
+  * BeanNameAware：感知所属的 BeanName
+  * ApplicationContextAware：感知所属的 ApplicationContext
+* 然后我们定义一个实现 *BeanPostProcessor* 接口的包装类 *ApplicationContextAwareProcessor*，用来实现 ApplicationContext 的感知，关于 BeanPostProcessor 的注册添加调用等功能在之前已经实现过了，这里不再赘述
+* 接着我们在抽象类 *AbstractApplicationContext* 中的 refresh 方法中添加上述的 ApplicationContextAwareProcessor 扩展，将当前的 ApplicationContext 添加进去
+* 最后我们在抽象类 *AbstractAutowireCapableBeanFactory* 中的 initializeBean 方法中实现感知，通过 instanceof 来判断当前的 bean 是否实现了对应的感知接口即可
 
 类关系如下：
 ![感知接口的类关系](./document/img/img14.png)

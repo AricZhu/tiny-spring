@@ -22,5 +22,7 @@ public class ApiTest {
         String result = userService.queryUserInfo();
 
         System.out.println("测试结果: " + result);
+        System.out.println("application: " + userService.getApplicationContext());
+        System.out.println("beanfactory: " + userService.getBeanFactory());
     }
 }

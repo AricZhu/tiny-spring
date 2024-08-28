@@ -3,10 +3,7 @@ package com.tiny.spring.factory.support;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.tiny.spring.BeanException;
-import com.tiny.spring.factory.DisposableBean;
-import com.tiny.spring.factory.InitializingBean;
-import com.tiny.spring.factory.PropertyValue;
-import com.tiny.spring.factory.PropertyValues;
+import com.tiny.spring.factory.*;
 import com.tiny.spring.factory.config.AutowireCapableBeanFactory;
 import com.tiny.spring.factory.config.BeanDefinition;
 import com.tiny.spring.factory.config.BeanPostProcessor;
@@ -81,6 +78,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     private Object initializeBean(String beanName, Object bean, BeanDefinition beanDefinition) {
+        if (bean instanceof Aware) {
+            if (bean instanceof BeanFactoryAware) {
+                ((BeanFactoryAware) bean).setBeanFactory(this);
+            }
+
+            if (bean instanceof BeanNameAware) {
+                ((BeanNameAware) bean).setBeanName(beanName);
+            }
+
+            if (bean instanceof BeanClassLoaderAware) {
+                ((BeanClassLoaderAware) bean).setBeanClassLoader(getBeanClassLoader());
+            }
+        }
+
         // 1. 执行 BeanPostProcessor Before 处理
         Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
 
