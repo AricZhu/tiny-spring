@@ -1,6 +1,7 @@
 package com.tiny.spring.factory.support;
 
 import com.tiny.spring.BeanException;
+import com.tiny.spring.factory.FactoryBean;
 import com.tiny.spring.factory.config.BeanDefinition;
 import com.tiny.spring.factory.config.BeanPostProcessor;
 import com.tiny.spring.factory.config.ConfigurableBeanFactory;
@@ -9,7 +10,7 @@ import com.tiny.spring.factory.utils.ClassUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements ConfigurableBeanFactory {
     private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
@@ -29,14 +30,24 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         return (T) getBean(name);
     }
 
-    protected Object doGetBean(String beanName, Object[] args) {
+    protected <T> T doGetBean(String beanName, Object[] args) {
         Object bean = getSingleton(beanName);
         if (bean != null) {
-            return bean;
+            return (T) getObjectForBeanInstance(bean, beanName);
         }
 
         BeanDefinition beanDefinition = getBeanDefinition(beanName);
-        return createBean(beanName, beanDefinition, args);
+        bean = createBean(beanName, beanDefinition, args);
+
+        return (T) getObjectForBeanInstance(bean, beanName);
+    }
+
+    private Object getObjectForBeanInstance(Object beanInstance, String beanName) {
+        if (!(beanInstance instanceof FactoryBean)) {
+            return  beanInstance;
+        }
+
+        return getObjectFromFactoryBean((FactoryBean) beanInstance, beanName);
     }
 
     protected abstract BeanDefinition getBeanDefinition(String beanName) throws BeanException;

@@ -18,11 +18,13 @@ public class ApiTest {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("src/test/resources/spring.xml");
         applicationContext.registerShutdownHook();
 
-        UserService userService = applicationContext.getBean("userService", UserService.class);
-        String result = userService.queryUserInfo();
+        UserService userService01 = applicationContext.getBean("userService", UserService.class);
+        UserService userService02 = applicationContext.getBean("userService", UserService.class);
+        String result = userService01.queryUserInfo();
+
+        System.out.println(userService01);
+        System.out.println(userService02);
 
         System.out.println("测试结果: " + result);
-        System.out.println("application: " + userService.getApplicationContext());
-        System.out.println("beanfactory: " + userService.getBeanFactory());
     }
 }
