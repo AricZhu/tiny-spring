@@ -213,15 +213,25 @@
 ![类关系图](./document/img/img16.png)
 
 ## 10. 实现事件发布订阅机制
-事件的发布订阅通常用来在一对多的场景下进行消息的通信，可以更好的解耦。事件机制主要有以下 3 个接口完成：
-* 事件定义: ApplicationEvent
-* 事件监听: ApplicationEventMulticaster，定义了提供添加、删除、广播事件的功能
-* 事件发布: ApplicationEventPublisher，定了事件发布标准
-* 事件监听函数: ApplicationListener。对当前事件是否感兴趣的分析是通过 isAssignableFrom 来进行判断的。isAssignableFrom 和 instanceof 相似，不过 isAssignableFrom 是用来判断子类和父类的关系的，或者接口的实现类和接口的关系的，默认所有的类的终极父类都是Object。如果 A.isAssignableFrom(B) 结果是 true，证明 B 可以转换成为 A,也就是 A 可以由 B 转换而来。
+在实际的开发中，我们通常需要一个能解偶的能力，而事件发布订阅就是一个很好的解偶双方的能力。所以本章我们完成事件的发布订阅机制。事件发布订阅的实现需要以下 3 个要素：
 
-事件监听函数的添加是在 refresh 函数中实现
+1. 自定义的事件
+2. 事件监听
+3. 事件发布
 
 ![事件机制](./document/img/img17.png)
+
+下面我们分别实现这 3 个要素。
+
+* 首先是自定义事件。我们定义继承标准的事件类 *EventObject* 的子类 *ApplicationEvent*，然后基于这个类再定义 *ApplicationContextEvent*，后续所有的自定义事件类都基于这个类
+* 然后我们定义两个继承上面的 *ApplicationContextEvent* 的的事件类：*ContextClosedEvent* 和 *ContextRefreshedEvent*，分别在容器关闭和刷新的时候触发事件
+* 接着我们定义事件监听接口 *ApplicationListener*，其中的方法 onApplicationEvent 就是事件发布后的调用方法
+* 上述实现了自定义的事件，接下来我们实现事件监听的功能。为此我们先定义标准接口 *ApplicationEventMulticaster*，其中包含了监听事件的添加、删除，同时还包含了事件的发布，也就是事件的订阅和发布都在这一个接口中定义了
+* 然后我们定义一个抽象类 *AbstractApplicationEventMulticaster*，去实现上述的接口，并且实现了监听事件的添加、删除功能这两个基本功能，方便后续其他实现类直接使用。同时在这个类中还增加了一个获取指定事件的所有监听队列。这一功能的核心实现是基于 isAssignableFrom 来判断当前监听的事件是否是目标事件实现的
+* 接着我们就可以定义一个实现类 *SimpleApplicationEventMulticaster*，它继承上述的抽象类，并且实现了 multicastEvent 广播方法，这样这个类就实现了事件的监听以及广播的能力
+* 然后我们定义标准接口 *ApplicationEventPublisher*，用来定义事件发布的方法。并且在接口 *ApplicationContext* 中继承它
+* 最后我们就在上下文类 *AbstractApplicationContext* 添加 *SimpleApplicationEventMulticaster* 的属性，实现事件的监听，同时实现接口 *ApplicationEventPublisher* 中的发布方法，完成事件的发布
+* 以上就是事件的订阅和发布机制的全部实现
 
 类关系如下：
 
