@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
+    <bean id="userService" class="bean.UserService"/>
 
-    <bean class="event.CustomEventListener"/>
-    <bean class="event.ContextRefreshedEventListener"/>
-    <bean class="event.ContextClosedEventListener"/>
+    <bean class="com.tiny.spring.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+
+    <bean id="beforeAdvice" class="bean.UserServiceBeforeAdvice"/>
+
+    <bean id="methodInterceptor" class="com.tiny.spring.aop.framework.adapter.MethodBeforeAdviceInterceptor">
+        <property name="advice" ref="beforeAdvice"/>
+    </bean>
+
+    <bean id="pointcutAdvisor" class="com.tiny.spring.aop.aspectj.AspectJExpressionPointcutAdvisor">
+        <property name="expression" value="execution(* bean.IUserService.*(..))"/>
+        <property name="advice" ref="methodInterceptor"/>
+    </bean>
+
 </beans>

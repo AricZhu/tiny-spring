@@ -268,16 +268,31 @@
 ![类关系](./document/img/img20.png)
 
 ## 12. 添加 AOP 动态代理到 Bean 生命周期
-其实在有了AOP的核心功能实现后，把这部分功能服务融入到 Spring 其实也不难，只不过要解决几个问题，包括：怎么借着 BeanPostProcessor 把动态代理融入到 Bean 的生命周期中，以及如何组装各项切点、拦截、前置的功能和适配对应的代理器。整体设计结构如下图：
+上一章我们实现了 AOP 功能，这一章我们把 AOP 功能加入到我们的 Spring 框架中。添加的方式其实并不难，核心是借助 BeanPostProcessor
 
 ![AOP](./document/img/img21.png)
 
-类关系如下：
-![类关系](./document/img/img22.png)
+### 实现过程
+* 我们首先定义拦截器链 BeforeAdvice，它扩展于接口 *Advice*。在上一章中我们并没有细分方法拦截器是在方法运行之前还是运行之后调用，但在实际的 Spring 框架中，会提供 before、after 和 around 这三种方式。所以这里我们先定义拦截器链
+* 然后我们定义 *MethodBeforeAdvice*，扩展上述的接口，用来表示在方法执行前调用。当然方法执行后，环绕等都可以以同样的方式定义，这里不再赘述
+* 接着我们定义访问接口 *Advisor*，用来包装上述的 *Advice*
+* 再接着我们定义 *PointcutAdvisor*，扩展于上述接口 *Advisor*，它是 Point 和 Advice 的组合包装
+* 接下来我们定义类 *AspectJExpressionPointcutAdvisor* 实现上述的接口。这个类中包含了切面 pointcut，拦截方法 advice 和方法表达式 expression
+* 然后我们定义方法拦截器类 *MethodBeforeAdviceInterceptor*，实现 *MethodInterceptor* 接口。这个类借助于 Advice 实现拦截方法的调用。核心代码如下：
+  * ```java
+    @Override
+    public Object invoke(MethodInvocation methodInvocation) throws Throwable {
+        this.advice.before(methodInvocation.getMethod(), methodInvocation.getArguments(), methodInvocation.getThis());
+        return methodInvocation.proceed();
+    }
+* 接着我们定义代理工厂 *ProxyFactory*，主要解决是使用 JDK 还是 Cglib 的方式代理
+* 然后我们定义类 *DefaultAdvisorAutoProxyCreator*，实现接口 *InstantiationAwareBeanPostProcessor*，用来实现在 Bean 生命周期中自动创建代理者的能力，其中 *InstantiationAwareBeanPostProcessor* 是扩展自接口 *BeanPostProcessor*
+* 最后我们在 createBean 方法中判断如果当前对象是 *InstantiationAwareBeanPostProcessor* 类型的话，就调用对应的方法进行初始化代理对象
+* 上述就是 AOP 功能在 Spring 中的实现
 
-* 整个类关系图中可以看到，在以 BeanPostProcessor 接口实现继承的 InstantiationAwareBeanPostProcessor 接口后，做了一个自动代理创建的类 DefaultAdvisorAutoProxyCreator，这个类的就是用于处理整个 AOP 代理融入到 Bean 生命周期中的核心类。
-* DefaultAdvisorAutoProxyCreator 会依赖于拦截器、代理工厂和Pointcut与Advisor的包装服务 AspectJExpressionPointcutAdvisor，由它提供切面、拦截方法和表达式。
-* Spring 的 AOP 把 Advice 细化了 BeforeAdvice、AfterAdvice、AfterReturningAdvice、ThrowsAdvice，目前我们做的测试案例中只用到了 BeforeAdvice，这部分可以对照 Spring 的源码进行补充测试。
+上述所涉及到的类的关系如下：
+
+![类关系](./document/img/img22.png)
 
 ## 13. 使用注解和包扫描实现 Bean 注册
 为了实现自动扫描注册，我们需要完成两件事：
