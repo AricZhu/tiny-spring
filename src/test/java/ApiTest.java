@@ -1,5 +1,12 @@
+import bean.IUserService;
 import bean.UserService;
+import bean.UserServiceInterceptor;
 import cn.hutool.core.io.IoUtil;
+import com.tiny.spring.aop.AdvisedSupport;
+import com.tiny.spring.aop.TargetSource;
+import com.tiny.spring.aop.aspectj.AspectJExpressionPointcut;
+import com.tiny.spring.aop.framework.Cglib2AopProxy;
+import com.tiny.spring.aop.framework.JdkDynamicAopProxy;
 import com.tiny.spring.context.support.ClassPathXmlApplicationContext;
 import com.tiny.spring.factory.core.io.DefaultResourceLoader;
 import com.tiny.spring.factory.core.io.Resource;
@@ -12,6 +19,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 public class ApiTest {
     @Test
@@ -20,5 +30,27 @@ public class ApiTest {
         applicationContext.publishEvent(new CustomEvent(applicationContext, 1019129009086763L, "成功了！"));
 
         applicationContext.registerShutdownHook();
+    }
+
+    @Test
+    public void test_dynamic() {
+        // 目标对象
+        IUserService userService = new UserService();
+
+        // 组装代理信息
+        AdvisedSupport advisedSupport = new AdvisedSupport();
+        advisedSupport.setTargetSource(new TargetSource(userService));
+        advisedSupport.setMethodInterceptor(new UserServiceInterceptor());
+        advisedSupport.setMethodMatcher(new AspectJExpressionPointcut("execution(* bean.IUserService.*(..))"));
+
+        // 代理对象(JdkDynamicAopProxy)
+        IUserService proxy_jdk = (IUserService) new JdkDynamicAopProxy(advisedSupport).getProxy();
+        // 测试调用
+        System.out.println("测试结果：" + proxy_jdk.queryUserInfo());
+
+        // 代理对象(Cglib2AopProxy)
+        IUserService proxy_cglib = (IUserService) new Cglib2AopProxy(advisedSupport).getProxy();
+        // 测试调用
+        System.out.println("测试结果：" + proxy_cglib.register("花花"));
     }
 }
