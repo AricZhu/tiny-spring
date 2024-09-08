@@ -295,15 +295,24 @@
 ![类关系](./document/img/img22.png)
 
 ## 13. 使用注解和包扫描实现 Bean 注册
-为了实现自动扫描注册，我们需要完成两件事：
-1. 提供需要扫描的基本包的路径
-2. 对需要自动注册的 Bean 对象添加注解来进行标记
+现在我们已经实现了 Spring 容器核心的 IOC 和 AOP，但现在的用法还是比较繁琐，我们要通过 XML 配置文件来定义 Bean。所以在本章我们实现包的自动扫描注册，以及属性的占位符配置
 
-同时通过 BeanFactoryPostProcessor 接口来实现对生成后的 Bean 对象进行属性占位符的替换。
+* 属性的占位符配置就是指我们可以通过 ${token} 给 Bean 对象注入进去属性信息。我们通过 BeanFactoryPostProcessor 来实现这个功能，因为它是在加载完所有 BeanDefinition 后，在对象实例化之前进行调用，刚好给我们进行属性的修改。具体很简单，就是遍历所有对象的所有属性，当监测到属性是一个占位符的时候，这时候将真正的值去替换这个占位符即可
+* 包的扫描注册的实现我们需要
+  * 首先是扫描路径的配置，即我们需要告诉框架在哪个路径下去扫描，我们在 xml 中通过标签 <context:component-scan /> 来表明扫描地址
+  * 然后是需要有特定的标记来表示当前需要被扫描注册的对象，这个我们通过注解 @Component 来实现
+  * 最后就需要一个专门的类来实现扫描注册的功能，并且在 XmlBeanDefinitionReader 中去调用这个扫描注册功能
 
 ![scan](./document/img/img23.png)
 
-类关系如下：
+### 具体实现过程如下：
+* 首先我们定义一个实现接口 *BeanFactoryPostProcessor* 的类 *PropertyPlaceholderConfigurer*，它用来处理属性占位符。方式也很简单，就是遍历当前所有的 BeanDefinition 对象的所有的属性，监测到有占位符的，则用实际值进行替换即可
+* 然后我们定义两个注解 @Scope 和 @Component，前者表示作用域，一般默认 "singleton"，后者用来表示当前类需要被扫描注册
+* 接下来我们定义类 *ClassPathScanningCandidateComponentProvider*，来实现在给定包路径下，找出所有需要被扫描注册的类，也就是所有被 @Component 注解的类。它的实现核心是借助于 hutool 工具包中的 scanPackageByAnnotation 方法，来获取所有指定注解的类
+* 然后我们定义一个继承上述类的子类 *ClassPathBeanDefinitionScanner*，它借助父类的扫描能力，在此基础上完成实际的 BeanDefinition 对象的注册功能 doScan
+* 最终我们在类 *XmlBeanDefinitionReader* 中调用上述类的扫描注册方法 doScan，完成扫描注册
+
+上述涉及到的类关系如下：
 
 ![类关系](./document/img/img24.png)
 
