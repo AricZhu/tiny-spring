@@ -64,10 +64,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
     protected void doBeanDefinitions(InputStream inputStream) throws ClassNotFoundException, DocumentException {
         SAXReader reader = new SAXReader();
         Document document = reader.read(inputStream);
-        org.dom4j.Element root = document.getRootElement();
+        Element root = document.getRootElement();
 
         // 解析 context:component-scan 标签，扫描包中的类并提取相关信息，用于组装 BeanDefinition
-        org.dom4j.Element componentScan = root.element("component-scan");
+        Element componentScan = root.element("component-scan");
         if (null != componentScan) {
             String scanPath = componentScan.attributeValue("base-package");
             if (StrUtil.isEmpty(scanPath)) {
@@ -76,8 +76,8 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
             scanPackage(scanPath);
         }
 
-        List<org.dom4j.Element> beanList = root.elements("bean");
-        for (org.dom4j.Element bean : beanList) {
+        List<Element> beanList = root.elements("bean");
+        for (Element bean : beanList) {
 
             String id = bean.attributeValue("id");
             String name = bean.attributeValue("name");
@@ -103,7 +103,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
                 beanDefinition.setScope(beanScope);
             }
 
-            List<org.dom4j.Element> propertyList = bean.elements("property");
+            List<Element> propertyList = bean.elements("property");
             // 读取属性并填充
             for (Element property : propertyList) {
                 // 解析标签：property
